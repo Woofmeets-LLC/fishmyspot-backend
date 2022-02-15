@@ -1,3 +1,4 @@
+## FISH my Spot Backend
 # Getting Started
 
 1. Create a `.env` file in root

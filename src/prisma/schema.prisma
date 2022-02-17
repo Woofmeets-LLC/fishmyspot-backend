@@ -14,7 +14,18 @@ model Fish {
     id          Int       @id() @default(autoincrement())
     name        String
     description String?
+    images      File[]
     createdAt   DateTime  @default(now())
     updatedAt   DateTime? @updatedAt
     deletedAt   DateTime?
+}
+
+model File {
+    id       Int    @id() @default(autoincrement())
+    filename String
+    mimetype String
+    size     Int?
+    url      String
+    Fish     Fish?  @relation(fields: [fishId], references: [id])
+    fishId   Int?
 }

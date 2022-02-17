@@ -1,3 +1,4 @@
+import { v4 } from 'uuid';
 import { GoogleFileUploadDto } from './dto/create-file.dto';
 
 const commonMimeTypes = {
@@ -41,8 +42,10 @@ export function modifyUploadFileName(
   uuid: string,
 ): GoogleFileUploadDto {
   const fieldname = file.fieldname ? `${file.fieldname}/` : '';
+  const short_uid = v4();
+
   return {
     ...file,
-    filename: `${fieldname}${uuid}/${file.originalname}`,
+    filename: `${fieldname}${uuid}/${short_uid}-${file.originalname}`,
   };
 }

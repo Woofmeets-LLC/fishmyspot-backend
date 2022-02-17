@@ -7,12 +7,16 @@ import {
   Param,
   Delete,
   UploadedFiles,
+  UploadedFile,
 } from '@nestjs/common';
 import { FishesService } from './fishes.service';
 import { CreateFishDto } from './dto/create-fish.dto';
 import { UpdateFishDto } from './dto/update-fish.dto';
 import { ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { MultiFileUpload } from 'src/file/custom-file.interceptor';
+import {
+  MultiFileUpload,
+  SingleFileUpload,
+} from 'src/file/custom-file.interceptor';
 import { GoogleFileUploadDto } from 'src/file/dto/create-file.dto';
 import { FileService } from 'src/file/file.service';
 import { GetFishDto } from './dto/get-fish.dto';
@@ -26,16 +30,16 @@ export class FishesController {
   ) {}
 
   @Post()
-  @MultiFileUpload('files', true)
+  @SingleFileUpload('file', true)
   @ApiConsumes('multipart/form-data')
   async create(
     @Body() createFishDto: CreateFishDto,
-    @UploadedFiles() files: GoogleFileUploadDto[],
+    @UploadedFile() files: GoogleFileUploadDto,
   ) {
-    const uploadedFiles = await this.fileService.createMany(files);
+    const uploadedFiles = await this.fileService.create(files);
     return this.fishesService.create({
       ...createFishDto,
-      files: uploadedFiles,
+      file: uploadedFiles,
     });
   }
 

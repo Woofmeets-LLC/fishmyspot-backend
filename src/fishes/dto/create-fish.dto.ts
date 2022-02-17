@@ -19,9 +19,9 @@ export class CreateFishDto implements Pick<Fish, 'name'> {
   @ApiProperty({
     required: false,
     description: 'Upload only images',
-    type: 'array',
-    items: { type: 'string', format: 'binary' },
+    type: 'string',
+    format: 'binary',
   })
   // the files in the dto object is just for swagger and api body shape
-  files: GoogleFile[];
+  file: GoogleFile;
 }

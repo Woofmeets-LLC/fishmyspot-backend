@@ -24,6 +24,10 @@ const imagesMimeTypes = {
   'text/html': false,
 };
 
+export const isImage = (mimetype: string): boolean => {
+  return imagesMimeTypes?.[mimetype] ?? false;
+};
+
 export function checkAllowedMimeType(
   mimeType: string,
   imagesOnly = false,
@@ -43,7 +47,6 @@ export function modifyUploadFileName(
 ): GoogleFileUploadDto {
   const fieldname = file.fieldname ? `${file.fieldname}/` : '';
   const short_uid = v4();
-
   return {
     ...file,
     filename: `${fieldname}${uuid}/${short_uid}-${file.originalname}`,

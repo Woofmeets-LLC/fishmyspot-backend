@@ -6,4 +6,7 @@ export class GoogleFile implements Partial<Express.Multer.File> {
   size: number;
   filename: string;
   url: string;
+  additional?: {
+    [key: string]: Pick<GoogleFile, 'size' | 'url' | 'mimetype'>;
+  };
 }

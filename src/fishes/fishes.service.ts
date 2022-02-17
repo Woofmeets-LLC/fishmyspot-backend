@@ -8,29 +8,24 @@ export class FishesService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(createFishDto: CreateFishDto) {
-    const { name, description, files } = createFishDto;
+    const { name, description, file } = createFishDto;
 
     return this.prismaService.fish.create({
       data: {
         name,
         description,
-        ...(files && {
-          images: {
-            createMany: {
-              data: files?.map((value) => {
-                return {
-                  filename: value.originalname,
-                  url: value.url,
-                  size: value.size,
-                  mimetype: value.mimetype,
-                };
-              }),
-            },
+        image: {
+          create: {
+            filename: file.filename,
+            mimetype: file.mimetype,
+            additional: file?.additional,
+            url: file.url,
+            size: file.size,
           },
-        }),
+        },
       },
       include: {
-        images: true,
+        image: true,
       },
     });
   }
@@ -43,7 +38,7 @@ export class FishesService {
         },
       },
       include: {
-        images: true,
+        image: true,
       },
     });
   }
@@ -57,7 +52,7 @@ export class FishesService {
         },
       },
       include: {
-        images: true,
+        image: true,
       },
     });
   }

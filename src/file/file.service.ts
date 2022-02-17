@@ -4,17 +4,24 @@ import { modifyUploadFileName } from './file.helpers';
 import { GoogleCloudStorageService } from './gcs/gcs.service';
 import { v4 as uuid } from 'uuid';
 import { GoogleFile } from './dto/response-file.dto';
+import { FileOptimizerService } from './file-optimizer.service';
 
 @Injectable()
 export class FileService {
   constructor(
     private readonly googleCloudFileService: GoogleCloudStorageService,
+    private readonly optimizedFileService: FileOptimizerService,
   ) {}
 
   async create(file: GoogleFileUploadDto): Promise<GoogleFile | null> {
     if (!file) return null;
     const uid = uuid();
-    return this.googleCloudFileService.upload(modifyUploadFileName(file, uid));
+
+    const optimizedFile = await this.optimizedFileService.optimizeImage(file);
+
+    return this.googleCloudFileService.upload(
+      modifyUploadFileName(optimizedFile, uid),
+    );
   }
 
   async createMany(files: GoogleFileUploadDto[]): Promise<GoogleFile[] | null> {

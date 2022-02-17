@@ -12,4 +12,5 @@ export class GoogleFileUploadDto implements Express.Multer.File {
   size: number;
   // this is what google uses to store the file
   filename: string;
+  additional?: { [kay: string]: Omit<GoogleFileUploadDto, 'additional'> };
 }

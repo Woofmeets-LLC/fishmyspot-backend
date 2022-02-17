@@ -10,5 +10,6 @@ export class GoogleFileUploadDto implements Express.Multer.File {
   encoding: string;
   mimetype: string;
   size: number;
+  // this is what google uses to store the file
   filename: string;
 }

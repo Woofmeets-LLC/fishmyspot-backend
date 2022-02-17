@@ -7,6 +7,7 @@ import { SecretService } from './secret/secret.service';
 import { SecretModule } from './secret/secret.module';
 import { ConfigModule } from '@nestjs/config';
 import { FileModule } from './file/file.module';
+import { FishesModule } from './fishes/fishes.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { FileModule } from './file/file.module';
     PrismaModule,
     SecretModule,
     FileModule,
+    FishesModule,
   ],
   controllers: [AppController],
   providers: [AppService, SecretService],

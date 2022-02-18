@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { File } from '@prisma/client';
+import { File, Prisma } from '@prisma/client';
 
 export class FileEntity implements Partial<File> {
   @ApiProperty()

@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { GoogleFileUploadDto } from './dto/create-file.dto';
 import { GoogleCloudStorageService } from './gcs/gcs.service';
 import { v4 as uuid } from 'uuid';
-import { GoogleFile } from './dto/response-file.dto';
 import { FileOptimizerService } from './file-optimizer.service';
 import { modifyUploadFileName } from './file-name.helpers';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -31,7 +30,7 @@ export class FileService {
       optimizedFile,
     );
 
-    return await this.prismaService.file.create({
+    return this.prismaService.file.create({
       data: {
         filename: responseFile.filename,
         mimetype: responseFile.mimetype,
@@ -56,7 +55,7 @@ export class FileService {
       optimizedFiles.map((file) => this.googleCloudFileService.upload(file)),
     );
 
-    const filesInDb = await this.prismaService.$transaction([
+    return this.prismaService.$transaction([
       ...uploadedFiles
         .filter((file) => file !== null)
         .map((file) =>
@@ -71,7 +70,5 @@ export class FileService {
           }),
         ),
     ]);
-
-    return filesInDb;
   }
 }

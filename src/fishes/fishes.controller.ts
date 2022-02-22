@@ -6,17 +6,13 @@ import {
   Patch,
   Param,
   Delete,
-  UploadedFiles,
   UploadedFile,
 } from '@nestjs/common';
 import { FishesService } from './fishes.service';
 import { CreateFishDto } from './dto/create-fish.dto';
 import { UpdateFishDto } from './dto/update-fish.dto';
 import { ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
-import {
-  MultiFileUpload,
-  SingleFileUpload,
-} from 'src/file/custom-file.interceptor';
+import { SingleFileUpload } from 'src/file/custom-file.interceptor';
 import { GoogleFileUploadDto } from 'src/file/dto/create-file.dto';
 import { FileService } from 'src/file/file.service';
 import { GetFishDto } from './dto/get-fish.dto';

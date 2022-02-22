@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Fish } from '@prisma/client';
 import { IsOptional, IsString } from 'class-validator';
-import { GoogleFile } from 'src/file/dto/response-file.dto';
 import { FileEntity } from 'src/file/entities/file.entity';
 
 export class CreateFishDto implements Pick<Fish, 'name'> {

@@ -1,6 +1,3 @@
-import { v4 } from 'uuid';
-import { GoogleFileUploadDto } from './dto/create-file.dto';
-
 const commonMimeTypes = {
   'image/gif': true,
   'image/png': true,
@@ -24,6 +21,10 @@ const imagesMimeTypes = {
   'text/html': false,
 };
 
+export const isImage = (mimetype: string): boolean => {
+  return imagesMimeTypes?.[mimetype] ?? false;
+};
+
 export function checkAllowedMimeType(
   mimeType: string,
   imagesOnly = false,
@@ -35,17 +36,4 @@ export function checkAllowedMimeType(
   if (!result) console.error(`${mimeType} not allowed`);
 
   return result;
-}
-
-export function modifyUploadFileName(
-  file: GoogleFileUploadDto,
-  uuid: string,
-): GoogleFileUploadDto {
-  const fieldname = file.fieldname ? `${file.fieldname}/` : '';
-  const short_uid = v4();
-
-  return {
-    ...file,
-    filename: `${fieldname}${uuid}/${short_uid}-${file.originalname}`,
-  };
 }

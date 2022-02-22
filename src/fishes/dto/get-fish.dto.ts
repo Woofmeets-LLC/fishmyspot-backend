@@ -5,13 +5,15 @@ import { FileEntity } from 'src/file/entities/file.entity';
 type FishWithImages = Omit<
   Prisma.FishGetPayload<{
     include: {
-      images: true;
+      image: true;
     };
   }>,
-  'deletedAt' | 'images'
+  'deletedAt' | 'image'
 >;
 
 export class GetFishDto implements FishWithImages {
+  @ApiProperty()
+  fileId: number;
   @ApiProperty()
   id: number;
   @ApiProperty()
@@ -23,8 +25,9 @@ export class GetFishDto implements FishWithImages {
   @ApiProperty()
   updatedAt: Date;
   @ApiProperty({
-    isArray: true,
-    type: () => [FileEntity],
+    type: () => FileEntity,
   })
-  images: FileEntity[];
+  image: FileEntity;
+  @ApiProperty()
+  additional: Prisma.JsonValue;
 }

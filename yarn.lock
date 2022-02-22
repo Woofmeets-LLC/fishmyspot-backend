@@ -900,6 +900,13 @@
   dependencies:
     "@types/node" "*"
 
+"@types/cookie-parser@^1.4.2":
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/@types/cookie-parser/-/cookie-parser-1.4.2.tgz#e4d5c5ffda82b80672a88a4281aaceefb1bd9df5"
+  integrity sha512-uwcY8m6SDQqciHsqcKDGbo10GdasYsPCYkH3hVegj9qAah6pX5HivOnOuI3WYmyQMnOATV39zv/Ybs0bC/6iVg==
+  dependencies:
+    "@types/express" "*"
+
 "@types/cookiejar@*":
   version "2.1.2"
   resolved "https://registry.npmjs.org/@types/cookiejar/-/cookiejar-2.1.2.tgz"
@@ -2013,6 +2020,14 @@ convert-source-map@^1.4.0, convert-source-map@^1.6.0, convert-source-map@^1.7.0:
   integrity sha512-+OQdjP49zViI/6i7nIJpA8rAl4sV/JdPfU9nZs3VqOwGIgizICvuN2ru6fMd+4llL0tar18UYJXfZ/TWtmhUjA==
   dependencies:
     safe-buffer "~5.1.1"
+
+cookie-parser@^1.4.6:
+  version "1.4.6"
+  resolved "https://registry.yarnpkg.com/cookie-parser/-/cookie-parser-1.4.6.tgz#3ac3a7d35a7a03bbc7e365073a26074824214594"
+  integrity sha512-z3IzaNjdwUC2olLIB5/ITd0/setiaFMLYiZJle7xg5Fe9KWAceil7xszYfHHBtDFYLSgJduS2Ty0P1uJdPDJeA==
+  dependencies:
+    cookie "0.4.1"
+    cookie-signature "1.0.6"
 
 cookie-signature@1.0.6:
   version "1.0.6"
@@ -3757,6 +3772,11 @@ jest@^27.2.5:
     import-local "^3.0.2"
     jest-cli "^27.5.1"
 
+js-cookie@^2.1.3:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/js-cookie/-/js-cookie-2.2.1.tgz#69e106dc5d5806894562902aa5baec3744e9b2b8"
+  integrity sha512-HvdH2LzI/EAZcUwA8+0nKNtWHqS+ZmijLA30RwZA0bo7ToCckjK5MkGhjED9KoRcXO6BaGI3I9UIzSA1FKFPOQ==
+
 js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz"
@@ -4871,6 +4891,16 @@ sharetribe-flex-integration-sdk@^1.7.0:
     lodash "^4.17.10"
     transit-js "^0.8.861"
     xdg-basedir "^4.0.0"
+
+sharetribe-flex-sdk@^1.15.0:
+  version "1.15.0"
+  resolved "https://registry.yarnpkg.com/sharetribe-flex-sdk/-/sharetribe-flex-sdk-1.15.0.tgz#847ca0d4ee45618532f82755c552b9ada8876105"
+  integrity sha512-J8kCzQfqf0L8d6VqrpCMqz589smsQeWDYjvQ9hoGcai7SOH/LlLZ2NFH2DgVMCvxnkImO2qplteLgfn89yYbVQ==
+  dependencies:
+    axios "^0.21.1"
+    js-cookie "^2.1.3"
+    lodash "^4.17.10"
+    transit-js "^0.8.861"
 
 sharp@^0.30.1:
   version "0.30.1"

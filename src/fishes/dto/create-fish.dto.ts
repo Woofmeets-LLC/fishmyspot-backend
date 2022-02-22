@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Fish } from '@prisma/client';
 import { IsOptional, IsString } from 'class-validator';
 import { GoogleFile } from 'src/file/dto/response-file.dto';
+import { FileEntity } from 'src/file/entities/file.entity';
 
 export class CreateFishDto implements Pick<Fish, 'name'> {
   @ApiProperty()
@@ -23,5 +24,5 @@ export class CreateFishDto implements Pick<Fish, 'name'> {
     format: 'binary',
   })
   // the files in the dto object is just for swagger and api body shape
-  file: GoogleFile;
+  file: FileEntity;
 }

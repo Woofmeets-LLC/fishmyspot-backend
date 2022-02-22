@@ -2,16 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { Bucket } from '@google-cloud/storage';
 import { SecretService } from 'src/secret/secret.service';
 import { getBucketFromStorage, getStorageInstance } from './gcs.helpers';
-import { GoogleFile } from '../dto/response-file.dto';
-import { GoogleFileUploadDto } from '../dto/create-file.dto';
+import {
+  GoogleFile,
+  GoogleFileAdditionalProps,
+} from '../dto/response-file.dto';
+import { BasicFileType, GoogleFileUploadDto } from '../dto/create-file.dto';
 import { format } from 'util';
+import { addMoreInfoToFileName } from '../file-name.helpers';
 
 // https://medium.com/@olamilekan001/image-upload-with-google-cloud-storage-and-node-js-a1cf9baa1876
-
-const addMoreInfoToFileName = (name: string, key: string) => {
-  const lastDot = name.lastIndexOf('.');
-  return `${name.substring(0, lastDot)}-${key}${name.substring(lastDot)}`;
-};
 
 @Injectable()
 export class GoogleCloudStorageService {
@@ -64,8 +63,18 @@ export class GoogleCloudStorageService {
   }
 
   async upload(file: GoogleFileUploadDto): Promise<GoogleFile | null> {
-    if (!file.additional) return this.#googleUpload(file);
+    // no additional files to upload, then simply upload the original file
+    if (!file?.additional) return this.#googleUpload(file);
+
     const parent = await this.#googleUpload(file);
+
+    return this.#uploadOptimizedFilesToGoogle(parent, file);
+  }
+
+  async #uploadOptimizedFilesToGoogle(
+    parent: GoogleFile,
+    file: GoogleFileUploadDto,
+  ): Promise<GoogleFile | null> {
     const optimizations = await Promise.all([
       ...Object.entries(file.additional).map(([key, value]) =>
         this.#googleUpload({
@@ -77,16 +86,24 @@ export class GoogleCloudStorageService {
 
     const keys = Object.keys(file.additional);
 
-    const optimizedmetadata = optimizations.map((item, index) => {
+    const metadataCb = (item: GoogleFile, index: number) => {
+      const { url, size, mimetype } = item;
       return {
         [keys.at(index)]: {
-          url: item.url,
-          size: item.size,
-          mimetype: item.mimetype,
+          url,
+          size,
+          mimetype,
         },
       };
-    });
+    };
+    const optimizedmetadata: GoogleFileAdditionalProps[] =
+      optimizations.map(metadataCb);
 
-    return { ...parent, additional: Object.assign({}, ...optimizedmetadata) };
+    const additional: GoogleFileAdditionalProps = Object.assign(
+      {},
+      ...optimizedmetadata,
+    );
+
+    return { ...parent, additional };
   }
 }

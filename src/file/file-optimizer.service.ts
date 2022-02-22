@@ -1,21 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { GoogleFileUploadDto } from './dto/create-file.dto';
+import { BasicFileType, GoogleFileUploadDto } from './dto/create-file.dto';
 import * as sharp from 'sharp';
 import { isImage } from './file.helpers';
-
-const changeExtension = (name?: string, ext = 'webp') => {
-  if (!name) return name;
-  const lastDot = name.lastIndexOf('.');
-  return `${name.substring(0, lastDot)}.${ext}`;
-};
+import { changeFileExtension } from './file-name.helpers';
+import { IMAGE_MIME_TYPE_EXTENSION, MIME_TYPE_NAME } from './mime.types';
 
 @Injectable()
 export class FileOptimizerService {
-  async #optimizeImageToWebP(
-    file: GoogleFileUploadDto,
+  async #optimizeImageToWebP<T extends BasicFileType>(
+    file: T,
     quality: number,
     width: number,
-  ): Promise<GoogleFileUploadDto> {
+  ): Promise<T> {
+    // Resize image using sharp
     const buffer = await sharp(file.buffer)
       .resize(width)
       .webp({
@@ -23,27 +20,42 @@ export class FileOptimizerService {
       })
       .resize()
       .toBuffer();
+
+    const originalname = changeFileExtension(
+      file?.originalname,
+      IMAGE_MIME_TYPE_EXTENSION.WEBP,
+    );
+
+    const filename = changeFileExtension(
+      file?.filename ?? file?.originalname,
+      IMAGE_MIME_TYPE_EXTENSION.WEBP,
+    );
+
     return {
       ...file,
-      originalname: changeExtension(file?.originalname, 'webp'),
-      filename: changeExtension(file?.filename ?? file?.originalname, 'webp'),
-      mimetype: 'image/webp',
+      originalname,
+      filename,
+      mimetype: MIME_TYPE_NAME.WEBP,
       size: Buffer.byteLength(buffer),
       buffer: buffer,
     };
   }
 
-  async optimizeImage(file: GoogleFileUploadDto): Promise<GoogleFileUploadDto> {
+  /**
+   *
+   * @param file
+   * @description - Optimizes images based [on this specifications](https://www.photoreview.com.au/tips/outputting/image-size-and-resolution-requirements/)
+   * @returns
+   */
+  async createOptimizedImage<T extends BasicFileType>(file: T): Promise<T> {
     if (!isImage(file.mimetype) || file.mimetype === 'image/webp') {
       return file;
     }
 
-    // https://www.photoreview.com.au/tips/outputting/image-size-and-resolution-requirements/
-
     const [sm, md, lg, xl] = await Promise.all([
-      this.#optimizeImageToWebP(file, 90, 320),
-      this.#optimizeImageToWebP(file, 80, 720),
-      this.#optimizeImageToWebP(file, 80, 1024),
+      this.#optimizeImageToWebP(file, 70, 320),
+      this.#optimizeImageToWebP(file, 70, 720),
+      this.#optimizeImageToWebP(file, 70, 1024),
       this.#optimizeImageToWebP(file, 80, 1920),
     ]);
 

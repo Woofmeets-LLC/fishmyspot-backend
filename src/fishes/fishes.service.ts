@@ -15,12 +15,8 @@ export class FishesService {
         name,
         description,
         image: {
-          create: {
-            filename: file.filename,
-            mimetype: file.mimetype,
-            additional: file?.additional,
-            url: file.url,
-            size: file.size,
+          connect: {
+            id: file.id,
           },
         },
       },
@@ -58,7 +54,12 @@ export class FishesService {
   }
 
   update(id: number, updateFishDto: UpdateFishDto) {
-    return `This action updates a #${id} fish`;
+    return this.prismaService.fish.update({
+      where: { id },
+      data: {
+        ...updateFishDto,
+      },
+    });
   }
 
   async remove(id: number) {

@@ -26,6 +26,16 @@ export class SecretService {
     };
   }
 
+  getPayPalSecrets() {
+    const url = this.configService.get<string>('PAYPAL_URL');
+
+    return {
+      clientId: this.configService.get<string>('PAYPAL_CLIENT_ID'),
+      secret: this.configService.get<string>('PAYPAL_SECRET'),
+      url,
+    };
+  }
+
   getCloudBucketName() {
     return this.configService.get<string>('GCS_BUCKET_NAME');
   }

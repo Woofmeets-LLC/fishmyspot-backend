@@ -2,8 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Fish } from '@prisma/client';
 import { IsOptional, IsString } from 'class-validator';
 import { FileEntity } from 'src/file/entities/file.entity';
+import { ToBoolean } from 'src/helpers/boolean-validator.transformer';
 
-export class CreateFishDto implements Pick<Fish, 'name'> {
+export class CreateFishDto implements Pick<Fish, 'name' | 'verified'> {
   @ApiProperty()
   @IsString()
   name: string;
@@ -14,6 +15,10 @@ export class CreateFishDto implements Pick<Fish, 'name'> {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiProperty()
+  @ToBoolean()
+  verified: boolean;
 
   @IsOptional()
   @ApiProperty({

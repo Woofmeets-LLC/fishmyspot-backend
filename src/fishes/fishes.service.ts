@@ -8,12 +8,13 @@ export class FishesService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(createFishDto: CreateFishDto) {
-    const { name, description, file } = createFishDto;
+    const { name, description, file, verified = false } = createFishDto;
 
     return this.prismaService.fish.create({
       data: {
         name,
         description,
+        verified,
         image: {
           connect: {
             id: file.id,
@@ -26,12 +27,19 @@ export class FishesService {
     });
   }
 
-  findAll() {
+  findAll(onlyVerfied?: boolean) {
+    const unverified = {
+      ...(onlyVerfied && {
+        verified: onlyVerfied,
+      }),
+    };
+
     return this.prismaService.fish.findMany({
       where: {
         deletedAt: {
           equals: null,
         },
+        ...unverified,
       },
       include: {
         image: true,

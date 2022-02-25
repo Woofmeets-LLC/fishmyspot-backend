@@ -7,11 +7,13 @@ import {
   Param,
   Delete,
   UploadedFile,
+  Query,
+  ParseBoolPipe,
 } from '@nestjs/common';
 import { FishesService } from './fishes.service';
 import { CreateFishDto } from './dto/create-fish.dto';
 import { UpdateFishDto } from './dto/update-fish.dto';
-import { ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiConsumes, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SingleFileUpload } from 'src/file/custom-file.interceptor';
 import { GoogleFileUploadDto } from 'src/file/dto/create-file.dto';
 import { FileService } from 'src/file/file.service';
@@ -39,13 +41,19 @@ export class FishesController {
     });
   }
 
+  @ApiQuery({
+    name: 'verified',
+    description: 'Only verified results wanted or not',
+    required: false,
+    type: Boolean,
+  })
   @Get()
   @ApiResponse({
     isArray: true,
     type: GetFishDto,
   })
-  findAll() {
-    return this.fishesService.findAll();
+  findAll(@Query('verified', ParseBoolPipe) verified?: boolean) {
+    return this.fishesService.findAll(verified);
   }
 
   @Get(':id')

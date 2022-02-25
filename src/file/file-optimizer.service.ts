@@ -18,7 +18,6 @@ export class FileOptimizerService {
       .webp({
         quality,
       })
-      .resize()
       .toBuffer();
 
     const originalname = changeFileExtension(
@@ -53,10 +52,10 @@ export class FileOptimizerService {
     }
 
     const [sm, md, lg, xl] = await Promise.all([
-      this.#optimizeImageToWebP(file, 70, 320),
-      this.#optimizeImageToWebP(file, 70, 720),
-      this.#optimizeImageToWebP(file, 70, 1024),
-      this.#optimizeImageToWebP(file, 80, 1920),
+      this.#optimizeImageToWebP(file, 65, 320),
+      this.#optimizeImageToWebP(file, 65, 720),
+      this.#optimizeImageToWebP(file, 65, 1024),
+      this.#optimizeImageToWebP(file, 70, 1920),
     ]);
 
     return {

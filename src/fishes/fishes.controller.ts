@@ -13,13 +13,7 @@ import {
 import { FishesService } from './fishes.service';
 import { CreateFishDto } from './dto/create-fish.dto';
 import { UpdateFishDto } from './dto/update-fish.dto';
-import {
-  ApiBody,
-  ApiConsumes,
-  ApiQuery,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiConsumes, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SingleFileUpload } from 'src/file/custom-file.interceptor';
 import { GoogleFileUploadDto } from 'src/file/dto/create-file.dto';
 import { FileService } from 'src/file/file.service';

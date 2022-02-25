@@ -8,6 +8,9 @@ import { SecretModule } from './secret/secret.module';
 import { ConfigModule } from '@nestjs/config';
 import { FileModule } from './file/file.module';
 import { FishesModule } from './fishes/fishes.module';
+import { PaymentService } from './payment/payment.service';
+import { PaymentModule } from './payment/payment.module';
+import { PaypalModule } from './paypal/paypal.module';
 
 @Module({
   imports: [
@@ -19,8 +22,10 @@ import { FishesModule } from './fishes/fishes.module';
     SecretModule,
     FileModule,
     FishesModule,
+    PaymentModule,
+    PaypalModule,
   ],
   controllers: [AppController],
-  providers: [AppService, SecretService],
+  providers: [AppService, SecretService, PaymentService],
 })
 export class AppModule {}

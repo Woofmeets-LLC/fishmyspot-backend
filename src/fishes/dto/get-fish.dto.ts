@@ -29,5 +29,7 @@ export class GetFishDto implements FishWithImages {
   })
   image: FileEntity;
   @ApiProperty()
+  verified: boolean;
+  @ApiProperty()
   additional: Prisma.JsonValue;
 }

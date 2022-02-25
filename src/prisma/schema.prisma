@@ -18,6 +18,7 @@ model Fish {
     createdAt   DateTime  @default(now())
     updatedAt   DateTime? @updatedAt
     deletedAt   DateTime?
+    verified    Boolean   @default(false)
     fileId      Int
 }
 

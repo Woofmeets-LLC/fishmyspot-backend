@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BasicFileType, GoogleFileUploadDto } from './dto/create-file.dto';
+import { BasicFileType } from './dto/create-file.dto';
 import * as sharp from 'sharp';
 import { isImage } from './file.helpers';
 import { changeFileExtension } from './file-name.helpers';

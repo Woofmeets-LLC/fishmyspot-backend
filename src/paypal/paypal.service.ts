@@ -4,6 +4,7 @@ import { SecretService } from 'src/secret/secret.service';
 import { stringify } from 'qs';
 import { PaypalAuthResponse } from './dto/auth-response.dto';
 import { PAYPAL_API_ENDPOINTS } from './paypal.constants';
+import { json } from 'stream/consumers';
 
 // https://developer.paypal.com/developer/applications/edit/SB:QVlKY0IxbXJJc29fUFc0OS0tUEJNeldlUk9KQnVMM0g4X0FzUTY3SlpXRWViMS1FNVNPTjNQUVp5azluRnNHdnlFT1ZGMVpiUzVxVVB1c2U=?appname=Platform%20Partner%20App%20-%205349654246137804925
 
@@ -69,6 +70,9 @@ export class PaypalService {
     const authAxios = await this.#getAuthenticatedAxiosInstance();
 
     const bodyParams = {
+      partner_configuration_override: {
+        return_url: this.secretService.getPayPalOnboardingRedirectUrl(),
+      },
       operations: [
         {
           operation: 'API_INTEGRATION',
@@ -97,6 +101,6 @@ export class PaypalService {
       JSON.stringify(bodyParams),
     );
 
-    return result.data;
+    return JSON.parse(result.data);
   }
 }

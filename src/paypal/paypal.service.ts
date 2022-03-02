@@ -4,7 +4,7 @@ import { SecretService } from 'src/secret/secret.service';
 import { stringify } from 'qs';
 import { PaypalAuthResponse } from './dto/auth-response.dto';
 import { PAYPAL_API_ENDPOINTS } from './paypal.constants';
-import { json } from 'stream/consumers';
+import { CreateOnboardingDTO } from './dto/onboarding-create-dto';
 
 // https://developer.paypal.com/developer/applications/edit/SB:QVlKY0IxbXJJc29fUFc0OS0tUEJNeldlUk9KQnVMM0g4X0FzUTY3SlpXRWViMS1FNVNPTjNQUVp5azluRnNHdnlFT1ZGMVpiUzVxVVB1c2U=?appname=Platform%20Partner%20App%20-%205349654246137804925
 
@@ -66,11 +66,20 @@ export class PaypalService {
     return this.#getAccessToken();
   }
 
-  async generateOnboardingUrl() {
+  async generateOnboardingUrl(additional: CreateOnboardingDTO) {
+    const { tracking_id } = additional;
+
+    const tracker = {
+      ...(tracking_id && {
+        tracking_id,
+      }),
+    };
+
     const authAxios = await this.#getAuthenticatedAxiosInstance();
 
     const bodyParams = {
-      partner_configuration_override: {
+      ...tracker,
+      partner_config_override: {
         return_url: this.secretService.getPayPalOnboardingRedirectUrl(),
       },
       operations: [

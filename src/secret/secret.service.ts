@@ -36,6 +36,10 @@ export class SecretService {
     };
   }
 
+  getPayPalOnboardingRedirectUrl(): string {
+    return this.configService.get<string>('PAYPAL_REDIRECT_URL');
+  }
+
   getCloudBucketName() {
     return this.configService.get<string>('GCS_BUCKET_NAME');
   }

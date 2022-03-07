@@ -8,7 +8,25 @@ export class SecretService {
   constructor(private readonly configService: ConfigService) {}
 
   getSharetribeIntegrationKeys() {
-    return { port: this.configService.get<number>('PORT') };
+    return {
+      sharetribeIntegrationSecret: this.configService.get<string>(
+        'FLEX_INTEGRATION_API_SECRET_KEY',
+      ),
+      sharetribeIntegrationClientId: this.configService.get<string>(
+        'FLEX_MARKETPLACE_API_CLIENT_ID',
+      ),
+    };
+  }
+
+  getSharetribeMarketplaceKeys() {
+    return {
+      sharetribeMarketplaceClientId: this.configService.get<string>(
+        'FLEX_MARKETPLACE_API_CLIENT_ID',
+      ),
+      sharetribeMarketplaceSecret: this.configService.get<string>(
+        'FLEX_MARKETPLACE_API_SECRET_KEY',
+      ),
+    };
   }
 
   getGoogleCloudSecretOptions(): StorageOptions {

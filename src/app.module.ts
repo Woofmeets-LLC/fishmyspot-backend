@@ -11,6 +11,9 @@ import { FishesModule } from './fishes/fishes.module';
 import { PaymentService } from './payment/payment.service';
 import { PaymentModule } from './payment/payment.module';
 import { PaypalModule } from './paypal/paypal.module';
+import { TaskService } from './task/task.service';
+import { TaskModule } from './task/task.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -24,8 +27,10 @@ import { PaypalModule } from './paypal/paypal.module';
     FishesModule,
     PaymentModule,
     PaypalModule,
+    TaskModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
-  providers: [AppService, SecretService, PaymentService],
+  providers: [AppService, SecretService, PaymentService, TaskService],
 })
 export class AppModule {}

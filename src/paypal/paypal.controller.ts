@@ -18,6 +18,18 @@ export class PaypalController {
     return this.paypalService.getCredentials();
   }
 
+  @Post('/Webhook')
+  async handlePaypalWebhook(@Body() body) {
+    if (body.event_type === 'MERCHANT.ONBOARDING.COMPLETED') {
+      const {
+        resource: { merchant_id, partner_client_id },
+      } = body;
+
+      console.log({ merchant_id, partner_client_id });
+    }
+    return 'working';
+  }
+
   @Post('/generate-signup-link')
   @ApiResponse({
     type: GenerateOnBoardingSignupUrl,

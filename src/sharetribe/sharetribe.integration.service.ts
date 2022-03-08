@@ -11,10 +11,11 @@ export class SharetribeIntegrationService {
       sharetribeIntegrationSecret: clientSecret,
       sharetribeIntegrationClientId: clientId,
     } = this.secretService.getSharetribeIntegrationKeys();
-
+    console.log(clientId == clientSecret, clientSecret, clientId);
     return createInstance({
-      clientId,
-      clientSecret,
+      clientId: clientId,
+      clientSecret: clientSecret,
+      baseUrl: 'https://flex-integ-api.sharetribe.com',
     });
   }
 
@@ -22,9 +23,13 @@ export class SharetribeIntegrationService {
     console.log('THE ERROR IS');
     try {
       const sdk = this.#initializeIntegrationSDK();
-      return sdk.events.query().catch((e) => {
-        console.log(e);
-      });
+      console.dir(sdk);
+      return sdk.marketplace
+        .show()
+        .then((DATA) => console.log(DATA))
+        .catch((e) => {
+          console.log(e);
+        });
     } catch (error) {
       return error;
     }

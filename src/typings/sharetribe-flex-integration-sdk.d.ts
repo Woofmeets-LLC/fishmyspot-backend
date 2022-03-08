@@ -6,7 +6,14 @@ declare module 'sharetribe-flex-integration-sdk' {
     config: ShareTribeSDKConfig,
   ): SharetribeIntegrationSdk;
   export const types: any;
-  export const tokenStore: any;
+  export type tokenStore = {
+    memoryStore(): {
+      getToken(): void;
+      setToken(data: any): void;
+      removeToken(): void;
+    };
+    fileStore: any;
+  };
   export const util: any;
 
   type EventTypes =
@@ -58,6 +65,7 @@ declare module 'sharetribe-flex-integration-sdk' {
     clientId: string;
     clientSecret?: string;
     tokenStore?: any;
+    baseUrl?: string;
   };
 
   type EventsQueryParams = {
@@ -77,6 +85,9 @@ declare module 'sharetribe-flex-integration-sdk' {
 
   type SharetribeIntegrationSdk = {
     sdk: any;
+    marketplace: {
+      show(): Promise<any>;
+    };
     events: ShareTribeEvents;
     listings: {
       show(): Promise<any>;

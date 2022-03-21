@@ -1,7 +1,10 @@
 import { Controller, Get, Request } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import * as moment from 'moment';
 import { SharetribeIntegrationService } from './sharetribe.integration.service';
 import { SharetribeService } from './sharetribe.service';
 
+@ApiTags('sharetribe')
 @Controller('sharetribe')
 export class SharetribeController {
   constructor(
@@ -18,6 +21,15 @@ export class SharetribeController {
 
   @Get('/event/order')
   async getOrderEvents() {
-    return this.sharetribeIntegrationService.queryEvents();
+    // parse list of data
+    const upcomingListingEvents =
+      await this.sharetribeIntegrationService.queryEvents();
+    // set notification items in queue
+    console.log(upcomingListingEvents);
+
+    return this.sharetribeIntegrationService.sendDelayedNotification(
+      'notify me',
+      new Date(moment(Date.now()).add(10, 'days').date()),
+    );
   }
 }

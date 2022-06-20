@@ -11,6 +11,8 @@ import { FishesModule } from './fishes/fishes.module';
 import { PaymentService } from './payment/payment.service';
 import { PaymentModule } from './payment/payment.module';
 import { PaypalModule } from './paypal/paypal.module';
+import { GiftcardsModule } from './giftcards/giftcards.module';
+import { StripeModule } from './stripe/stripe.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { PaypalModule } from './paypal/paypal.module';
     FishesModule,
     PaymentModule,
     PaypalModule,
+    GiftcardsModule,
+    StripeModule,
   ],
   controllers: [AppController],
   providers: [AppService, SecretService, PaymentService],

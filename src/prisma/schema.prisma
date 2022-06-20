@@ -31,3 +31,30 @@ model File {
     url        String
     Fish       Fish[]
 }
+
+model PromoCode {
+    id            Int          @id @default(autoincrement())
+    promo         String       @unique
+    paymentIntent String       @unique
+    amount        Int
+    email         String
+    createdAt     DateTime     @default(now())
+    updatedAt     DateTime     @updatedAt
+    PromoUsage    PromoUsage[]
+}
+
+model PromoUsage {
+    id            Int       @id @default(autoincrement())
+    promo         String
+    anglerId      String
+    pondOwnerId   String
+    transactionId String    @unique
+    paymentIntent String    @unique
+    usedAmount    Int
+    pondId        String
+    payout        Boolean   @default(false)
+    isSuccess     Boolean   @default(false)
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
+    promoCode     PromoCode @relation(fields: [promo], references: [promo])
+}

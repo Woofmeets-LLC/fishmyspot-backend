@@ -1,4 +1,5 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { StripeService } from 'src/stripe/stripe.service';
@@ -123,5 +124,61 @@ export class GiftcardsService {
     }
 
     return {};
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleCron() {
+    const promoUsage = await this.prismaService.promoUsage.findMany({
+      where: {
+        isSuccess: false,
+        createdAt: {
+          lte: new Date(Date.now() - 10 * 60 * 1000),
+        },
+      },
+    });
+
+    console.log('cron executed', new Date().toISOString());
+    promoUsage.forEach(async (item) => {
+      const paymentIntent = await this.stripeService.paymentIntents.retrieve(
+        item.paymentIntent,
+      );
+      if (paymentIntent.status === 'canceled') {
+        const promoUsage = await this.prismaService.promoUsage.findUnique({
+          where: {
+            id: item.id,
+          },
+        });
+
+        await this.prismaService.$transaction([
+          this.prismaService.promoCode.update({
+            where: {
+              promo: promoUsage.promo,
+            },
+            data: {
+              amount: {
+                increment: promoUsage.usedAmount,
+              },
+              PromoUsage: {
+                update: {
+                  where: {
+                    id: item.id,
+                  },
+                  data: {
+                    usedAmount: {
+                      decrement: promoUsage.usedAmount,
+                    },
+                  },
+                },
+              },
+            },
+          }),
+          this.prismaService.promoUsage.deleteMany({
+            where: {
+              usedAmount: 0,
+            },
+          }),
+        ]);
+      }
+    });
   }
 }

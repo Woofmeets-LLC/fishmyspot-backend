@@ -1,6 +1,13 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpStatus,
+  Injectable,
+  Res,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import { Response } from 'express';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { StripeService } from 'src/stripe/stripe.service';
 import * as voucherify from 'voucher-code-generator';
@@ -11,6 +18,7 @@ export class GiftcardsService {
   constructor(
     private readonly prismaService: PrismaService,
     private stripeService: StripeService,
+    private readonly configService: ConfigService,
   ) {}
 
   async getPromo(body: GetPromoDTO) {
@@ -137,13 +145,13 @@ export class GiftcardsService {
       },
     });
 
-    console.log('cron executed', new Date().toISOString());
+    console.log('cron executed : ', new Date().toISOString());
     promoUsage.forEach(async (item) => {
       const paymentIntent = await this.stripeService.paymentIntents.retrieve(
         item.paymentIntent,
       );
       if (paymentIntent.status === 'canceled') {
-        const promoUsage = await this.prismaService.promoUsage.findUnique({
+        const promoUsageEntry = await this.prismaService.promoUsage.findUnique({
           where: {
             id: item.id,
           },
@@ -152,11 +160,11 @@ export class GiftcardsService {
         await this.prismaService.$transaction([
           this.prismaService.promoCode.update({
             where: {
-              promo: promoUsage.promo,
+              promo: promoUsageEntry.promo,
             },
             data: {
               amount: {
-                increment: promoUsage.usedAmount,
+                increment: promoUsageEntry.usedAmount,
               },
               PromoUsage: {
                 update: {
@@ -165,7 +173,7 @@ export class GiftcardsService {
                   },
                   data: {
                     usedAmount: {
-                      decrement: promoUsage.usedAmount,
+                      decrement: promoUsageEntry.usedAmount,
                     },
                   },
                 },
@@ -180,5 +188,68 @@ export class GiftcardsService {
         ]);
       }
     });
+  }
+
+  async stripeWebhook(stripeSignature: any, body: any, @Res() res: Response) {
+    const endpointSecret =
+      'whsec_9d631637c6869a9f12544f4a2344d0172e91df2f9e5bd5dd188bccb5c1250dae';
+    let event;
+    try {
+      event = this.stripeService.webhooks.constructEvent(
+        body,
+        stripeSignature,
+        endpointSecret,
+      );
+    } catch (err) {
+      console.log({ err });
+      res.status(400).send(`Webhook Error: ${err.message}`);
+      return;
+    }
+
+    // Handle the event
+    switch (event.type) {
+      case 'charge.refunded':
+        const paymentIntent = event.data.object.payment_intent;
+        if (paymentIntent) {
+          const existingRedeemption =
+            await this.prismaService.promoUsage.findUnique({
+              where: { paymentIntent },
+            });
+          if (existingRedeemption) {
+            await this.prismaService.promoCode.update({
+              where: {
+                promo: existingRedeemption.promo,
+              },
+              data: {
+                amount: {
+                  increment: existingRedeemption.usedAmount,
+                },
+                PromoUsage: {
+                  update: {
+                    where: {
+                      paymentIntent,
+                    },
+                    data: {
+                      usedAmount: {
+                        decrement: existingRedeemption.usedAmount,
+                      },
+                    },
+                  },
+                },
+              },
+            });
+          }
+        }
+        console.log({ paymentIntent: event.data.object.payment_intent });
+        break;
+      // ... handle other event types
+      default:
+        console.log(
+          `Unhandled event type ${event.type} ${event.data.object.payment_intent}`,
+        );
+    }
+
+    // Return a 200 response to acknowledge receipt of the event
+    res.status(HttpStatus.OK).send();
   }
 }

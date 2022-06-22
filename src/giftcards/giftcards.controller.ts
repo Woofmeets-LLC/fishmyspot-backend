@@ -1,7 +1,17 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Param,
+  Post,
+  Req,
+  Res,
+} from '@nestjs/common';
+import { ApiOperation } from '@nestjs/swagger';
+import { Response } from 'express';
 import { ApplyPromoDTO, GetPromoDTO } from './dto';
 import { GiftcardsService } from './giftcards.service';
-
 @Controller('giftcards')
 export class GiftcardsController {
   constructor(private readonly giftCardService: GiftcardsService) {}
@@ -19,5 +29,21 @@ export class GiftcardsController {
   @Post('apply')
   async applyPromo(@Body() body: ApplyPromoDTO) {
     return this.giftCardService.applyPromo(body);
+  }
+
+  @ApiOperation({
+    summary: 'Only Stripe will use this api for sending their webhook events!',
+  })
+  @Post('webhook')
+  async handleWebhook(
+    @Headers('stripe-signature') signature,
+    @Req() request: any,
+    @Res() response: Response,
+  ) {
+    return this.giftCardService.stripeWebhook(
+      signature,
+      request.rawBody,
+      response,
+    );
   }
 }

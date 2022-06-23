@@ -216,28 +216,33 @@ export class GiftcardsService {
               where: { paymentIntent },
             });
           if (existingRedeemption) {
-            await this.prismaService.promoCode.update({
-              where: {
-                promo: existingRedeemption.promo,
-              },
-              data: {
-                amount: {
-                  increment: existingRedeemption.usedAmount,
+            await this.prismaService.$transaction([
+              this.prismaService.promoCode.update({
+                where: {
+                  promo: existingRedeemption.promo,
                 },
-                PromoUsage: {
-                  update: {
-                    where: {
-                      paymentIntent,
-                    },
-                    data: {
-                      usedAmount: {
-                        decrement: existingRedeemption.usedAmount,
+                data: {
+                  amount: {
+                    increment: existingRedeemption.usedAmount,
+                  },
+                  PromoUsage: {
+                    update: {
+                      where: {
+                        paymentIntent,
+                      },
+                      data: {
+                        usedAmount: {
+                          decrement: existingRedeemption.usedAmount,
+                        },
                       },
                     },
                   },
                 },
-              },
-            });
+              }),
+              this.prismaService.promoUsage.delete({
+                where: { paymentIntent },
+              }),
+            ]);
           }
         }
         console.log({ paymentIntent: event.data.object.payment_intent });

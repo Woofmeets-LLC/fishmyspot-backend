@@ -8,6 +8,8 @@ RUN  npm install --only=production
 
 COPY . ./
 
+
+RUN npm run migrate
 RUN npm run build
 
 CMD ["npm","start:prod"]

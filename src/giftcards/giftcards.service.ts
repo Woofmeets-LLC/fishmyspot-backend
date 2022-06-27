@@ -7,6 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import axios from 'axios';
 import { Response } from 'express';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { StripeService } from 'src/stripe/stripe.service';
@@ -235,7 +236,7 @@ export class GiftcardsService {
               where: { paymentIntent },
             });
           if (existingRedeemption) {
-            await this.prismaService.$transaction([
+            const result = await this.prismaService.$transaction([
               this.prismaService.promoCode.update({
                 where: {
                   promo: existingRedeemption.promo,
@@ -262,9 +263,28 @@ export class GiftcardsService {
                 where: { paymentIntent },
               }),
             ]);
+            const used_amount = existingRedeemption.usedAmount;
+            const coupon_code = result?.[0].promo;
+            const amount_left = result?.[0].amount;
+            const to_email = result?.[0].email;
+            const data = {
+              service_id: 'service_0z8txkg',
+              template_id: 'template_f352gaf',
+              user_id: 'D9WeGnhaGJceVldKx',
+              accessToken: '8YvwMOeLzUHsF3zs7Z0EK',
+              template_params: {
+                used_amount,
+                coupon_code,
+                amount_left,
+                to_email,
+              },
+            };
+            axios
+              .post('https://api.emailjs.com/api/v1.0/email/send', data)
+              .catch((err) => console.log(err));
           }
         }
-        console.log({ paymentIntent: event.data.object.payment_intent });
+        // console.log({ paymentIntent: event.data.object.payment_intent });
         break;
       // ... handle other event types
       default:

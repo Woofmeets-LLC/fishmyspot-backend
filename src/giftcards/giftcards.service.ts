@@ -5,13 +5,13 @@ import {
   Res,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { Response } from 'express';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { StripeService } from 'src/stripe/stripe.service';
 import * as voucherify from 'voucher-code-generator';
-import { ApplyPromoDTO, GetPromoDTO } from './dto';
+import { ApplyPromoDTO, ApproveTransactionDTO, GetPromoDTO } from './dto';
 
 @Injectable()
 export class GiftcardsService {
@@ -134,7 +134,26 @@ export class GiftcardsService {
     return {};
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  async approveTransaction(body: ApproveTransactionDTO) {
+    const { transactionId } = body;
+
+    try {
+      const result = await this.prismaService.promoUsage.update({
+        where: {
+          transactionId,
+        },
+        data: {
+          isSuccess: true,
+        },
+      });
+      delete result.paymentIntent;
+      return result;
+    } catch (err) {
+      throw new ForbiddenException('Something went wrong. Please try again.');
+    }
+  }
+
+  @Cron('0 */5 * * * *')
   async handleCron() {
     const promoUsage = await this.prismaService.promoUsage.findMany({
       where: {

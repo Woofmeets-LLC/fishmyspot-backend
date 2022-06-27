@@ -56,3 +56,10 @@ export class ApplyPromoDTO {
   @ApiProperty()
   pondOwnerId: string;
 }
+
+export class ApproveTransactionDTO {
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  transactionId: string;
+}

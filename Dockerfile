@@ -1,15 +1,16 @@
-FROM node:16-slim
+FROM node:16-alpine
 
 WORKDIR /usr/src/app
 
 COPY package.json ./
 
-RUN  npm install --only=production
+RUN  yarn
 
 COPY . ./
 
 
-RUN npm run migrate
-RUN npm run build
+RUN yarn db:deploy
+RUN yarn generate
+RUN yarn build
 
-CMD ["npm","start:prod"]
+CMD ["yarn","start:prod"]

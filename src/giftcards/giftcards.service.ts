@@ -211,8 +211,9 @@ export class GiftcardsService {
   }
 
   async stripeWebhook(stripeSignature: any, body: any, @Res() res: Response) {
-    const endpointSecret =
-      'whsec_9d631637c6869a9f12544f4a2344d0172e91df2f9e5bd5dd188bccb5c1250dae';
+    const endpointSecret = this.configService.get<string>(
+      'STRIPE_WEBHOOK_SECRET',
+    );
     let event;
     try {
       event = this.stripeService.webhooks.constructEvent(

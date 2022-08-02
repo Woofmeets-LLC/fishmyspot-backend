@@ -10,7 +10,12 @@ import {
 } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { Response } from 'express';
-import { ApplyPromoDTO, ApproveTransactionDTO, GetPromoDTO } from './dto';
+import {
+  ApplyPromoDTO,
+  ApproveTransactionDTO,
+  GetDiscountDTO,
+  GetPromoDTO,
+} from './dto';
 import { GiftcardsService } from './giftcards.service';
 @Controller('giftcards')
 export class GiftcardsController {
@@ -19,6 +24,11 @@ export class GiftcardsController {
   @Post('promo')
   async getPromo(@Body() body: GetPromoDTO) {
     return this.giftCardService.getPromo(body);
+  }
+
+  @Post('discount')
+  async getDiscount(@Body() body: GetDiscountDTO) {
+    return this.giftCardService.getDiscount(body);
   }
 
   @Get(':code')

@@ -12,7 +12,12 @@ import { Response } from 'express';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { StripeService } from 'src/stripe/stripe.service';
 import * as voucherify from 'voucher-code-generator';
-import { ApplyPromoDTO, ApproveTransactionDTO, GetPromoDTO } from './dto';
+import {
+  ApplyPromoDTO,
+  ApproveTransactionDTO,
+  GetDiscountDTO,
+  GetPromoDTO,
+} from './dto';
 
 @Injectable()
 export class GiftcardsService {
@@ -66,6 +71,55 @@ export class GiftcardsService {
       }
     } else {
       throw new ForbiddenException('Payment is not completed');
+    }
+  }
+
+  async getVoucher(amount): Promise<string[]> {
+    const entries = await this.prismaService.promoCode.findMany({
+      where: { amount },
+      select: { promo: true },
+    });
+
+    const promoEntries = entries.map((entry) => entry.promo);
+
+    let pureVouchers = new Set<string>();
+    while (pureVouchers.size === 0) {
+      const vouchers = voucherify.generate({
+        count: 10,
+        pattern: `FMS${amount}-######`,
+        charset: voucherify.charset('alphanumeric'),
+      });
+      const setOfEntries = new Set<string>(promoEntries);
+
+      pureVouchers = new Set<string>(
+        vouchers.filter((voucher) => !setOfEntries.has(voucher)),
+      );
+    }
+    return [...pureVouchers];
+  }
+
+  async getDiscount(body: GetDiscountDTO) {
+    const amount = body.amount;
+
+    const vouchers: string[] = await this.getVoucher(amount);
+    try {
+      const result = await this.prismaService.promoCode.create({
+        data: {
+          promo: vouchers[0],
+          amount,
+          email: 'info@fishmyspot.com',
+          type: 'DISCOUNT',
+        },
+      });
+      return result;
+    } catch (e) {
+      if (e instanceof PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new ForbiddenException(
+            'A promo code generation failed. Please try again.',
+          );
+        }
+      }
     }
   }
 

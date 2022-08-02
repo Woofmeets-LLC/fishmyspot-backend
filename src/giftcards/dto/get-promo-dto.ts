@@ -13,6 +13,13 @@ export class GetPromoDTO {
   email: string;
 }
 
+export class GetDiscountDTO {
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty()
+  amount: number;
+}
+
 export class VerifyPromoDTO {
   @IsString()
   @IsNotEmpty()

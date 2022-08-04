@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEmail,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+} from 'class-validator';
 
 export class GetPromoDTO {
   @IsString()
@@ -18,6 +25,31 @@ export class GetDiscountDTO {
   @IsNotEmpty()
   @ApiProperty()
   amount: number;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty()
+  valid: boolean;
+}
+
+export class UpdateDiscountDTO {
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty()
+  amount: number;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty()
+  valid: boolean;
+}
+
+export class InvalidateDiscountsDTO {
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty()
+  @ApiProperty()
+  coupons: string[];
 }
 
 export class VerifyPromoDTO {

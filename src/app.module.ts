@@ -14,6 +14,7 @@ import { SecretModule } from './secret/secret.module';
 import { SecretService } from './secret/secret.service';
 import { SharetribeModule } from './sharetribe/sharetribe.module';
 import { StripeModule } from './stripe/stripe.module';
+import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -29,6 +30,7 @@ import { StripeModule } from './stripe/stripe.module';
     GiftcardsModule,
     StripeModule,
     ScheduleModule.forRoot(),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService, SecretService, PaymentService],

@@ -39,6 +39,7 @@ model PromoCode {
     type          PromoType    @default(GIFTCARD)
     amount        Int
     email         String
+    valid         Boolean      @default(true)
     createdAt     DateTime     @default(now())
     updatedAt     DateTime     @updatedAt
     PromoUsage    PromoUsage[]

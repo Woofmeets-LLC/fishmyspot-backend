@@ -17,6 +17,7 @@ import {
   ApproveTransactionDTO,
   GetDiscountDTO,
   GetPromoDTO,
+  InvalidateDiscountsDTO,
 } from './dto';
 
 @Injectable()
@@ -37,11 +38,7 @@ export class GiftcardsService {
       });
       if (!existingPromo) {
         const amount = paymentIntent.amount / 100;
-        const vouchers = voucherify.generate({
-          count: 1,
-          pattern: `FMS${amount}-######`,
-          charset: voucherify.charset('alphanumeric'),
-        });
+        const vouchers: string[] = await this.getVoucher(amount);
         try {
           const promocode = await this.prismaService.promoCode.create({
             data: {
@@ -100,6 +97,7 @@ export class GiftcardsService {
 
   async getDiscount(body: GetDiscountDTO) {
     const amount = body.amount;
+    const valid = body.valid;
 
     const vouchers: string[] = await this.getVoucher(amount);
     try {
@@ -109,6 +107,7 @@ export class GiftcardsService {
           amount,
           email: 'info@fishmyspot.com',
           type: 'DISCOUNT',
+          valid,
         },
       });
       return result;
@@ -123,11 +122,48 @@ export class GiftcardsService {
     }
   }
 
+  async invalidateCoupons(body: InvalidateDiscountsDTO) {
+    const { coupons } = body;
+
+    try {
+      const result = await this.prismaService.promoCode.updateMany({
+        where: {
+          promo: {
+            in: coupons,
+          },
+        },
+        data: {
+          valid: false,
+        },
+      });
+      return result;
+    } catch (err) {
+      throw new ForbiddenException('Something went wrong. Please try again.');
+    }
+  }
+
+  async updateDiscount(amount: number, valid: boolean, coupon: string) {
+    try {
+      const result = await this.prismaService.promoCode.update({
+        where: { promo: coupon },
+        data: {
+          amount,
+          valid,
+        },
+      });
+      return result;
+    } catch (e) {
+      console.log(e);
+      throw new ForbiddenException('Something went wrong. Please try again.');
+    }
+  }
+
   async verifyPromo(code: string) {
     const existingPromo = await this.prismaService.promoCode.findUnique({
       where: { promo: code },
     });
     if (existingPromo) {
+      delete existingPromo.paymentIntent;
       return existingPromo;
     } else {
       throw new ForbiddenException('Something went wrong. Please try again.');
@@ -149,35 +185,66 @@ export class GiftcardsService {
       const promoEntry = await this.prismaService.promoCode.findUnique({
         where: { promo },
       });
-      if (promoEntry?.amount >= usedAmount) {
-        const entry = await this.prismaService.promoCode.update({
-          where: { promo },
-          data: {
-            amount: {
-              decrement: usedAmount,
-            },
-            PromoUsage: {
-              create: {
-                anglerId,
-                pondOwnerId,
-                transactionId,
-                paymentIntent,
-                usedAmount,
-                pondId,
+      if (promoEntry?.amount >= usedAmount && promoEntry?.valid) {
+        if (promoEntry?.type === 'GIFTCARD') {
+          const entry = await this.prismaService.promoCode.update({
+            where: { promo },
+            data: {
+              amount: {
+                decrement: usedAmount,
+              },
+              PromoUsage: {
+                create: {
+                  anglerId,
+                  pondOwnerId,
+                  transactionId,
+                  paymentIntent,
+                  usedAmount,
+                  pondId,
+                },
               },
             },
-          },
-          // select: {
-          //   amount: true,
-          //   email: true,
-          //   PromoUsage: {
-          //     select: {
-          //       usedAmount: true,
-          //     },
-          //   },
-          // },
-        });
-        return entry;
+            // select: {
+            //   amount: true,
+            //   email: true,
+            //   PromoUsage: {
+            //     select: {
+            //       usedAmount: true,
+            //     },
+            //   },
+            // },
+          });
+          return entry;
+        } else if (promoEntry?.type === 'DISCOUNT') {
+          const entry = await this.prismaService.promoCode.update({
+            where: { promo },
+            data: {
+              valid: false,
+              PromoUsage: {
+                create: {
+                  anglerId,
+                  pondOwnerId,
+                  transactionId,
+                  paymentIntent,
+                  usedAmount,
+                  pondId,
+                },
+              },
+            },
+            // select: {
+            //   amount: true,
+            //   email: true,
+            //   PromoUsage: {
+            //     select: {
+            //       usedAmount: true,
+            //     },
+            //   },
+            // },
+          });
+          //with bearer token
+
+          return entry;
+        }
       } else {
         throw new ForbiddenException('Promo code or used amount is not valid');
       }
@@ -201,6 +268,33 @@ export class GiftcardsService {
           isSuccess: true,
         },
       });
+      axios
+        .get(
+          `http://localhost:1337/api/discount-cards/?filters[coupon][$eq]=${result.promo}`,
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.CMS_API_TOKEN}`,
+            },
+          },
+        )
+        .then((res) => {
+          if (res.data.data.length != 0) {
+            axios
+              .delete(
+                `http://localhost:1337/api/discount-cards/${res.data.data[0].id}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${process.env.CMS_API_TOKEN}`,
+                  },
+                },
+              )
+              .then((res) => {
+                console.log({ res });
+              })
+              .catch((err) => console.log({ err }));
+          }
+        })
+        .catch((err) => console.log(err));
       delete result.paymentIntent;
       return result;
     } catch (err) {
@@ -208,17 +302,16 @@ export class GiftcardsService {
     }
   }
 
-  @Cron('0 */5 * * * *')
+  @Cron('0 */2 * * * *')
   async handleCron() {
     const promoUsage = await this.prismaService.promoUsage.findMany({
       where: {
         isSuccess: false,
         createdAt: {
-          lte: new Date(Date.now() - 10 * 60 * 1000),
+          lte: new Date(Date.now() - 2 * 60 * 1000),
         },
       },
     });
-
     console.log('cron executed : ', new Date().toISOString());
     promoUsage.forEach(async (item) => {
       const paymentIntent = await this.stripeService.paymentIntents.retrieve(
@@ -231,35 +324,68 @@ export class GiftcardsService {
           },
         });
 
-        await this.prismaService.$transaction([
-          this.prismaService.promoCode.update({
-            where: {
-              promo: promoUsageEntry.promo,
-            },
-            data: {
-              amount: {
-                increment: promoUsageEntry.usedAmount,
+        const promoCodeEntry = await this.prismaService.promoCode.findUnique({
+          where: {
+            promo: promoUsageEntry.promo,
+          },
+        });
+        if (promoCodeEntry.type === 'GIFTCARD') {
+          await this.prismaService.$transaction([
+            this.prismaService.promoCode.update({
+              where: {
+                promo: promoUsageEntry.promo,
               },
-              PromoUsage: {
-                update: {
-                  where: {
-                    id: item.id,
-                  },
-                  data: {
-                    usedAmount: {
-                      decrement: promoUsageEntry.usedAmount,
+              data: {
+                amount: {
+                  increment: promoUsageEntry.usedAmount,
+                },
+                PromoUsage: {
+                  update: {
+                    where: {
+                      id: item.id,
+                    },
+                    data: {
+                      usedAmount: {
+                        decrement: promoUsageEntry.usedAmount,
+                      },
                     },
                   },
                 },
               },
-            },
-          }),
-          this.prismaService.promoUsage.deleteMany({
-            where: {
-              usedAmount: 0,
-            },
-          }),
-        ]);
+            }),
+            this.prismaService.promoUsage.deleteMany({
+              where: {
+                usedAmount: 0,
+              },
+            }),
+          ]);
+        } else {
+          await this.prismaService.$transaction([
+            this.prismaService.promoCode.update({
+              where: {
+                promo: promoUsageEntry.promo,
+              },
+              data: {
+                valid: true,
+                PromoUsage: {
+                  update: {
+                    where: {
+                      id: item.id,
+                    },
+                    data: {
+                      usedAmount: 0,
+                    },
+                  },
+                },
+              },
+            }),
+            this.prismaService.promoUsage.deleteMany({
+              where: {
+                usedAmount: 0,
+              },
+            }),
+          ]);
+        }
       }
     });
   }

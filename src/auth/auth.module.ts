@@ -10,6 +10,7 @@ import { JwtStrategy } from './strategies/ jwt.strategy';
     PassportModule,
     JwtModule.register({
       secret: jwtConstants.secret,
+      signOptions: { algorithm: 'HS256' },
     }),
   ],
   providers: [AuthService, JwtStrategy],

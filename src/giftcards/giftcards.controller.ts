@@ -8,9 +8,11 @@ import {
   Post,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { JwtAuthGuard } from 'src/auth/guards/ jwt-auth.guard';
 import {
   ApplyPromoDTO,
   ApproveTransactionDTO,
@@ -28,17 +30,19 @@ export class GiftcardsController {
     return this.giftCardService.getPromo(body);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('discount')
   async getDiscount(@Body() body: GetDiscountDTO) {
     return this.giftCardService.getDiscount(body);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('discount/invalidate')
   async invalidateCoupons(@Body() body: InvalidateDiscountsDTO) {
     return this.giftCardService.invalidateCoupons(body);
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('strapi')
   async handleStarpiWebhook(@Req() req: Request, @Res() res: Response) {
     const eventType = req.body.event;

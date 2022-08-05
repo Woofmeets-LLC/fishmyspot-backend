@@ -153,8 +153,11 @@ export class GiftcardsService {
       });
       return result;
     } catch (e) {
-      console.log(e);
-      throw new ForbiddenException('Something went wrong. Please try again.');
+      if (e instanceof PrismaClientKnownRequestError) {
+        if (e.code === 'P2025') {
+          throw new ForbiddenException('Record to update not found.');
+        }
+      }
     }
   }
 
@@ -270,7 +273,9 @@ export class GiftcardsService {
       });
       axios
         .get(
-          `http://localhost:1337/api/discount-cards/?filters[coupon][$eq]=${result.promo}`,
+          `${this.configService.get<string>(
+            'CMS_URL',
+          )}/api/discount-cards/?filters[coupon][$eq]=${result.promo}`,
           {
             headers: {
               Authorization: `Bearer ${process.env.CMS_API_TOKEN}`,
@@ -281,7 +286,9 @@ export class GiftcardsService {
           if (res.data.data.length != 0) {
             axios
               .delete(
-                `http://localhost:1337/api/discount-cards/${res.data.data[0].id}`,
+                `${this.configService.get<string>(
+                  'CMS_URL',
+                )}/api/discount-cards/${res.data.data[0].id}`,
                 {
                   headers: {
                     Authorization: `Bearer ${process.env.CMS_API_TOKEN}`,
@@ -291,10 +298,10 @@ export class GiftcardsService {
               .then((res) => {
                 console.log({ res });
               })
-              .catch((err) => console.log({ err }));
+              .catch((err) => console.log({ error: err.message }));
           }
         })
-        .catch((err) => console.log(err));
+        .catch((err) => console.log({ error: err.message }));
       delete result.paymentIntent;
       return result;
     } catch (err) {
@@ -302,13 +309,13 @@ export class GiftcardsService {
     }
   }
 
-  @Cron('0 */2 * * * *')
+  @Cron('0 */5 * * * *')
   async handleCron() {
     const promoUsage = await this.prismaService.promoUsage.findMany({
       where: {
         isSuccess: false,
         createdAt: {
-          lte: new Date(Date.now() - 2 * 60 * 1000),
+          lte: new Date(Date.now() - 10 * 60 * 1000),
         },
       },
     });

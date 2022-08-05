@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { FileModule } from './file/file.module';
 import { FishesModule } from './fishes/fishes.module';
+
+import { AuthModule } from './auth/auth.module';
 import { GiftcardsModule } from './giftcards/giftcards.module';
 import { PaymentModule } from './payment/payment.module';
 import { PaymentService } from './payment/payment.service';
@@ -14,6 +16,7 @@ import { SecretModule } from './secret/secret.module';
 import { SecretService } from './secret/secret.service';
 import { SharetribeModule } from './sharetribe/sharetribe.module';
 import { StripeModule } from './stripe/stripe.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -29,6 +32,7 @@ import { StripeModule } from './stripe/stripe.module';
     GiftcardsModule,
     StripeModule,
     ScheduleModule.forRoot(),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService, SecretService, PaymentService],

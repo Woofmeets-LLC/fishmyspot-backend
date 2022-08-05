@@ -35,9 +35,11 @@ model File {
 model PromoCode {
     id            Int          @id @default(autoincrement())
     promo         String       @unique
-    paymentIntent String       @unique
+    paymentIntent String?      @unique
+    type          PromoType    @default(GIFTCARD)
     amount        Int
     email         String
+    valid         Boolean      @default(true)
     createdAt     DateTime     @default(now())
     updatedAt     DateTime     @updatedAt
     PromoUsage    PromoUsage[]
@@ -57,4 +59,9 @@ model PromoUsage {
     createdAt     DateTime  @default(now())
     updatedAt     DateTime  @updatedAt
     promoCode     PromoCode @relation(fields: [promo], references: [promo])
+}
+
+enum PromoType {
+    GIFTCARD
+    DISCOUNT
 }

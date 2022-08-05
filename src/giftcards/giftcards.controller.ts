@@ -3,14 +3,23 @@ import {
   Controller,
   Get,
   Headers,
+  HttpStatus,
   Param,
   Post,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
-import { Response } from 'express';
-import { ApplyPromoDTO, ApproveTransactionDTO, GetPromoDTO } from './dto';
+import { Request, Response } from 'express';
+import { JwtAuthGuard } from 'src/auth/guards/ jwt-auth.guard';
+import {
+  ApplyPromoDTO,
+  ApproveTransactionDTO,
+  GetDiscountDTO,
+  GetPromoDTO,
+  InvalidateDiscountsDTO,
+} from './dto';
 import { GiftcardsService } from './giftcards.service';
 @Controller('giftcards')
 export class GiftcardsController {
@@ -19,6 +28,41 @@ export class GiftcardsController {
   @Post('promo')
   async getPromo(@Body() body: GetPromoDTO) {
     return this.giftCardService.getPromo(body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('discount')
+  async getDiscount(@Body() body: GetDiscountDTO) {
+    return this.giftCardService.getDiscount(body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('discount/invalidate')
+  async invalidateCoupons(@Body() body: InvalidateDiscountsDTO) {
+    return this.giftCardService.invalidateCoupons(body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('strapi')
+  async handleStarpiWebhook(@Req() req: Request, @Res() res: Response) {
+    const eventType = req.body.event;
+    switch (eventType) {
+      case 'entry.update':
+        return this.giftCardService.updateDiscount(
+          req.body.entry.amount,
+          req.body.entry.valid,
+          req.body.entry.coupon,
+        );
+      case 'entry.delete':
+        return this.giftCardService.updateDiscount(
+          req.body.entry.amount,
+          false,
+          req.body.entry.coupon,
+        );
+      default:
+        console.log(`Unhandled event type ${eventType} in handleStarpiWebhook`);
+    }
+    res.status(HttpStatus.OK).send();
   }
 
   @Get(':code')

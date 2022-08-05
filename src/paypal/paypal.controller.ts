@@ -1,7 +1,13 @@
+<<<<<<< HEAD
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PaypalAuthResponse } from './dto/auth-response.dto';
 import { CreateOnboardingDTO } from './dto/onboarding-create-dto';
+=======
+import { Controller, Get } from '@nestjs/common';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { PaypalAuthResponse } from './dto/auth-response.dto';
+>>>>>>> 3a109d55ac403d32303941909d2eb4e509c66717
 import { GenerateOnBoardingSignupUrl } from './dto/onboarding-response.dto';
 import { PaypalService } from './paypal.service';
 
@@ -18,6 +24,7 @@ export class PaypalController {
     return this.paypalService.getCredentials();
   }
 
+<<<<<<< HEAD
   @Post('/Webhook')
   async handlePaypalWebhook(@Body() body) {
     if (body.event_type === 'MERCHANT.ONBOARDING.COMPLETED') {
@@ -44,5 +51,13 @@ export class PaypalController {
     @Body() body: CreateOnboardingDTO,
   ): Promise<GenerateOnBoardingSignupUrl> {
     return this.paypalService.generateOnboardingUrl(body);
+=======
+  @Get('/generate-signup-link')
+  @ApiResponse({
+    type: GenerateOnBoardingSignupUrl,
+  })
+  async get(): Promise<GenerateOnBoardingSignupUrl> {
+    return this.paypalService.generateOnboardingUrl();
+>>>>>>> 3a109d55ac403d32303941909d2eb4e509c66717
   }
 }

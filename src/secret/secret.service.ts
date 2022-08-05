@@ -1,6 +1,6 @@
+import { StorageOptions } from '@google-cloud/storage';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { StorageOptions } from '@google-cloud/storage';
 import { join } from 'path';
 
 @Injectable()

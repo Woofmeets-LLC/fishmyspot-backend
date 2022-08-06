@@ -46,21 +46,25 @@ export class GiftcardsController {
   @Post('strapi')
   async handleStarpiWebhook(@Req() req: Request, @Res() res: Response) {
     const eventType = req.body.event;
-    switch (eventType) {
-      case 'entry.update':
-        return this.giftCardService.updateDiscount(
-          req.body.entry.amount,
-          req.body.entry.valid,
-          req.body.entry.coupon,
-        );
-      case 'entry.delete':
-        return this.giftCardService.updateDiscount(
-          req.body.entry.amount,
-          false,
-          req.body.entry.coupon,
-        );
-      default:
-        console.log(`Unhandled event type ${eventType} in handleStarpiWebhook`);
+    if (req.body.model === 'discount-card') {
+      switch (eventType) {
+        case 'entry.update':
+          return this.giftCardService.updateDiscount(
+            req.body.entry.amount,
+            req.body.entry.valid,
+            req.body.entry.coupon,
+          );
+        case 'entry.delete':
+          return this.giftCardService.updateDiscount(
+            req.body.entry.amount,
+            false,
+            req.body.entry.coupon,
+          );
+        default:
+          console.log(
+            `Unhandled event type ${eventType} in handleStarpiWebhook`,
+          );
+      }
     }
     res.status(HttpStatus.OK).send();
   }

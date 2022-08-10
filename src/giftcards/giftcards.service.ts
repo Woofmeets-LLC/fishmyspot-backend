@@ -424,52 +424,60 @@ export class GiftcardsService {
               where: { paymentIntent },
             });
           if (existingRedeemption) {
-            const result = await this.prismaService.$transaction([
-              this.prismaService.promoCode.update({
+            const promoCodeEntry =
+              await this.prismaService.promoCode.findUnique({
                 where: {
                   promo: existingRedeemption.promo,
                 },
-                data: {
-                  amount: {
-                    increment: existingRedeemption.usedAmount,
+              });
+            if (promoCodeEntry.type === 'GIFTCARD') {
+              const result = await this.prismaService.$transaction([
+                this.prismaService.promoCode.update({
+                  where: {
+                    promo: existingRedeemption.promo,
                   },
-                  PromoUsage: {
-                    update: {
-                      where: {
-                        paymentIntent,
-                      },
-                      data: {
-                        usedAmount: {
-                          decrement: existingRedeemption.usedAmount,
+                  data: {
+                    amount: {
+                      increment: existingRedeemption.usedAmount,
+                    },
+                    PromoUsage: {
+                      update: {
+                        where: {
+                          paymentIntent,
+                        },
+                        data: {
+                          usedAmount: {
+                            decrement: existingRedeemption.usedAmount,
+                          },
                         },
                       },
                     },
                   },
+                }),
+                this.prismaService.promoUsage.delete({
+                  where: { paymentIntent },
+                }),
+              ]);
+              const used_amount = existingRedeemption.usedAmount;
+              const coupon_code = result?.[0].promo;
+              const amount_left = result?.[0].amount;
+              const to_email = result?.[0].email;
+              const data = {
+                service_id: 'service_0z8txkg',
+                template_id: 'template_f352gaf',
+                user_id: 'D9WeGnhaGJceVldKx',
+                accessToken: '8YvwMOeLzUHsF3zs7Z0EK',
+                template_params: {
+                  used_amount,
+                  coupon_code,
+                  amount_left,
+                  to_email,
                 },
-              }),
-              this.prismaService.promoUsage.delete({
-                where: { paymentIntent },
-              }),
-            ]);
-            const used_amount = existingRedeemption.usedAmount;
-            const coupon_code = result?.[0].promo;
-            const amount_left = result?.[0].amount;
-            const to_email = result?.[0].email;
-            const data = {
-              service_id: 'service_0z8txkg',
-              template_id: 'template_f352gaf',
-              user_id: 'D9WeGnhaGJceVldKx',
-              accessToken: '8YvwMOeLzUHsF3zs7Z0EK',
-              template_params: {
-                used_amount,
-                coupon_code,
-                amount_left,
-                to_email,
-              },
-            };
-            axios
-              .post('https://api.emailjs.com/api/v1.0/email/send', data)
-              .catch((err) => console.log(err));
+              };
+              axios
+                .post('https://api.emailjs.com/api/v1.0/email/send', data)
+                .catch((err) => console.log(err));
+            }
           }
         }
         // console.log({ paymentIntent: event.data.object.payment_intent });

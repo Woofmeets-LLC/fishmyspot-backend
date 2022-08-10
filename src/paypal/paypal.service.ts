@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Axios } from 'axios';
-import { SecretService } from 'src/secret/secret.service';
 import { stringify } from 'qs';
+import { SecretService } from 'src/secret/secret.service';
 import { PaypalAuthResponse } from './dto/auth-response.dto';
+import { CreateOnboardingDTO } from './dto/onboarding-create-dto';
 import { PAYPAL_API_ENDPOINTS } from './paypal.constants';
 
 // https://developer.paypal.com/developer/applications/edit/SB:QVlKY0IxbXJJc29fUFc0OS0tUEJNeldlUk9KQnVMM0g4X0FzUTY3SlpXRWViMS1FNVNPTjNQUVp5azluRnNHdnlFT1ZGMVpiUzVxVVB1c2U=?appname=Platform%20Partner%20App%20-%205349654246137804925
@@ -65,7 +66,7 @@ export class PaypalService {
     return this.#getAccessToken();
   }
 
-  async generateOnboardingUrl() {
+  async generateOnboardingUrl(body: CreateOnboardingDTO) {
     const authAxios = await this.#getAuthenticatedAxiosInstance();
 
     const bodyParams = {

@@ -21,6 +21,10 @@ Disclaimer: Only *allowed people* can view the [drive link](https://drive.google
     GCS_SERVICE_KEY_PATH='./cloud-storage-service-account.json'
     GCS_BUCKET_NAME=''
     GCS_PROJECT_ID=''
+    PAYPAL_CLIENT_ID=
+    PAYPAL_SECRET=
+    PAYPAL_URL=
+    PAYPAL_REDIRECT_URL=
     ```
 
 2. Run `yarn`

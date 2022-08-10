@@ -6,15 +6,32 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { AppModule } from './app.module';
-import * as cors from 'cors';
+import * as cloneBuffer from 'clone-buffer';
 import * as cookieParser from 'cookie-parser';
+import * as cors from 'cors';
+import { json } from 'express';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-  app.use(cors());
+  app.use(
+    cors({
+      // origin: ['https://fishmyspot.com', 'https://stripe.com'],
+    }),
+  );
   app.use(cookieParser());
+  app.use(
+    json({
+      verify: (req: any, res, buf, encoding) => {
+        // important to store rawBody for Stripe signature verification
+        if (req.headers['stripe-signature'] && Buffer.isBuffer(buf)) {
+          req.rawBody = cloneBuffer(buf);
+        }
+        return true;
+      },
+    }),
+  );
 
   const port = configService.get<number>('PORT') ?? 3000;
 

@@ -1,6 +1,6 @@
+import { StorageOptions } from '@google-cloud/storage';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { StorageOptions } from '@google-cloud/storage';
 import { join } from 'path';
 
 @Injectable()
@@ -34,6 +34,10 @@ export class SecretService {
       secret: this.configService.get<string>('PAYPAL_SECRET'),
       url,
     };
+  }
+
+  getPayPalOnboardingRedirectUrl(): string {
+    return this.configService.get<string>('PAYPAL_REDIRECT_URL');
   }
 
   getCloudBucketName() {
